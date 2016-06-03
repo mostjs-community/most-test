@@ -1,6 +1,6 @@
 {
   "name": "most-test",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Unit testing tools for Most.js",
   "main": "lib/index.js",
   "scripts": {
@@ -19,7 +19,10 @@
     "test",
     "testing"
   ],
-  "author": "Nathan Ridley",
+  "author": {
+    "name": "Nathan Ridley",
+    "email": "axefrog@gmail.com"
+  },
   "license": "MIT",
   "peerDependencies": {
     "most": "*"

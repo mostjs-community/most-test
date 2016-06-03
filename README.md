@@ -1,5 +1,7 @@
 # Unit Testing Tools for Most.js
 
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/cujojs/most)
+
 This is a library to make unit testing of [Most.js](https://github.com/cujojs/most) streams easier.
 
 Though I expect to include more in the future, the most important (and currently only) tool provided is a stream runner utilizing a **virtual timer** with which you can test your streams on your own terms, rather than being subject to the unpredictability and imprecision of the OS timer. Being able to test with single-millisecond granularity can make your tests clearer and more concise as well.

@@ -1,5 +1,6 @@
 # Unit Testing Tools for Most.js
 
+[![Build Status](https://travis-ci.org/axefrog/most-test.svg?branch=master)](https://travis-ci.org/axefrog/most-test)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/cujojs/most)
 
 This is a library to make unit testing of [Most.js](https://github.com/cujojs/most) streams easier.

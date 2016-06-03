@@ -13,8 +13,6 @@ Though I expect to include more in the future, the most important (and currently
 npm install --save-dev most-test
 ```
 
-Most.js is a peer dependency. Obviously you'll need to make sure it's installed too.
-
 ## Stream Runner
 
 Testing a stream using the virtual timer is very straightforward. Simply import the `run` function from `most-test` and use it instead of `stream.observe`. Call `tick()` or `tick(interval)` to advance time forward by either 1 millisecond (default) or a custom interval. The function returns a promise containing a summary of the events that occurred during that time interval. To advance time again, simply call `tick(interval?)` again, returning the promise so that it resolves as the next step in the promise chain.

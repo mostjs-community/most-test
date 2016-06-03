@@ -24,9 +24,6 @@
     "email": "axefrog@gmail.com"
   },
   "license": "MIT",
-  "peerDependencies": {
-    "most": "*"
-  },
   "devDependencies": {
     "babel-cli": "^6.7.5",
     "babel-eslint": "^6.0.3",
@@ -34,6 +31,7 @@
     "chai": "^3.5.0",
     "eslint": "^2.8.0",
     "mkdirp": "^0.5.1",
-    "mocha": "^2.5.3"
+    "mocha": "^2.5.3",
+    "most": "*"
   }
 }

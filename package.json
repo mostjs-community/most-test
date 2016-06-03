@@ -9,7 +9,8 @@
     "test-dev": "mocha --watch --bail",
     "precompile": "rimraf lib/ && mkdirp lib",
     "compile": "babel -d lib/ src/",
-    "prepublish": "npm run compile && npm run lint && npm test"
+    "build": "npm run compile && npm run lint && npm test",
+    "prepublish": "npm run build"
   },
   "keywords": [
     "most",

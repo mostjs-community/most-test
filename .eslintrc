@@ -1,7 +1,9 @@
 {
   "parser": "babel-eslint",
   "env": {
-    "node": true
+    "node": true,
+    "es6": true,
+    "mocha": true
   },
   "parseOptions": {
     "ecmaVersion": 6,

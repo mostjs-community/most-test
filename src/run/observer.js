@@ -22,17 +22,17 @@ export default class Observer
 			return;
 		}
 		this.active = false;
-		disposeThen(this._end, this._error, this._disposable, x);
+		disposeThen(this._end, this._error, this._disposable, t, x);
 	}
 
 	error(t, e) {
 		this.active = false;
-		disposeThen(this._error, this._error, this._disposable, e);
+		disposeThen(this._error, this._error, this._disposable, t, e);
 	}
 }
 
-function disposeThen(end, error, disposable, x) {
+function disposeThen(end, error, disposable, t, x) {
 	Promise.resolve(disposable.dispose()).then(function () {
-		end(x);
-	}, error);
+		end(t, x);
+	}, error.bind(null, t));
 }

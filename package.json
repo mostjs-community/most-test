@@ -1,6 +1,6 @@
 {
   "name": "most-test",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Unit testing tools for Most.js",
   "main": "lib/index.js",
   "scripts": {
@@ -11,6 +11,10 @@
     "compile": "babel -d lib/ src/",
     "build": "npm run compile && npm run lint && npm test",
     "prepublish": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/axefrog/most-test.git"
   },
   "keywords": [
     "most",

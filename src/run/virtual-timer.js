@@ -43,9 +43,6 @@ export default class VirtualTimer
     const id = ++this._id;
     this._queue.push({id, f, t});
     this._queue.sort((a, b) => a.t - b.t);
-    if(id === 5) {
-      f();
-    }
     return id;
   }
 

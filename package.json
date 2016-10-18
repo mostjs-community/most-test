@@ -2,6 +2,7 @@
   "name": "most-test",
   "version": "1.0.3",
   "description": "Unit testing tools for Most.js",
+  "typings": "type-definitions/most-test.d.ts",
   "main": "lib/index.js",
   "scripts": {
     "test": "mocha",

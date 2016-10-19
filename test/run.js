@@ -1,4 +1,4 @@
-import most from 'most';
+import * as most from 'most';
 import {run} from '../src';
 import assert from 'assert';
 

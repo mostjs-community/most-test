@@ -1,6 +1,7 @@
 import Observer from './observer';
 import SettableDisposable from 'most/lib/disposable/SettableDisposable';
 import Scheduler from 'most/lib/scheduler/Scheduler';
+import Timeline from 'most/lib/scheduler/Timeline';
 import VirtualTimer from './virtual-timer';
 
 export class TestEnv
@@ -119,7 +120,7 @@ export function run({source}) {
     sink.end.bind(sink),
     sink.error.bind(sink),
     disposable);
-  const scheduler = new Scheduler(timer);
+  const scheduler = new Scheduler(timer, new Timeline());
   disposable.setDisposable(source.run(observer, scheduler));
   return testEnv;
 }

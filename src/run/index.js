@@ -4,30 +4,100 @@ import Scheduler from 'most/lib/scheduler/Scheduler';
 import Timeline from 'most/lib/scheduler/Timeline';
 import VirtualTimer from './virtual-timer';
 
-export class TestEnv
-{
-  constructor(timer, sink) {
-    this._timer = timer;
-    this._sink = sink;
-    this._t = 0;
-  }
+export class TestEnvironment {
 
-  tick(t = 1) {
-    return this._timer.tick(t)
-      .then(() => {
-        this._t += t;
-        const bucket = this._sink.next(this._t);
-        return bucket.toObject();
-      });
-  }
+    constructor() {
+        this._timer = new VirtualTimer();
+        this._t = 0;
+        this._sinks = new WeakMap();
+        this._buckets = new WeakMap();
+        this._tick = Promise.resolve();
+    }
 
-  get now() {
-    return this._t;
-  }
+    get now() {
+        return this._t;
+    }
+  
+    tick( t = 1 ) {
+        this._tick = this._tick.then( () => this._timer.tick(t) )
+                               .then( () => this._t += t );
+        return this;
+    }
 
-  get results() {
-    return this._sink.buckets.map(b => b.toObject());
-  }
+    collect( stream ) {
+        const { sink, buckets } = this._cache( stream );
+        return this._tick.then( () => {
+            const bucket = sink.next( this._t );
+            buckets.push( bucket );
+            return bucket.toObject();
+        });
+    }
+
+    results( stream ) {
+        const { buckets } = this._cache( stream );
+        return buckets.map( bucket => bucket.toObject() );
+    }
+
+    reset() {
+        return this._tick.then( () => {
+            this._t = 0;
+            this._timer._now = 0;
+            this._sinks = new WeakMap();
+            this._buckets = new WeakMap();
+        });
+    }
+
+
+    _cache( stream ) {
+        let sink = this._sinks.get( stream );
+        let buckets = this._buckets.get( stream );
+        if( !sink ) {
+            sink = this._newSink( stream );
+            this._sinks.set( stream, sink );
+        }
+        if( !buckets ) {
+            buckets = [];
+            this._buckets.set( stream, buckets );
+        }
+        return { sink, buckets };
+    }
+
+    _newSink({ source }) {
+        const sink = new Sink();
+        const disposable = new SettableDisposable();
+        const observer = new Observer(
+            sink.event.bind(sink),
+            sink.end.bind(sink),
+            sink.error.bind(sink),
+            disposable );
+        const scheduler = new Scheduler( this._timer, new Timeline() );
+        disposable.setDisposable( source.run(observer, scheduler) );
+        return sink;
+    }
+}
+
+export class BasicTestEnvironment {
+
+    constructor( stream ) {
+        this._env = new TestEnvironment();
+        this._stream = stream;
+    }
+
+    get now() {
+        return this._env.now;
+    }
+
+    tick( t = 1 ) {
+        return this._env.tick( t ).collect( this._stream );
+    }
+
+    get results() {
+        return this._env.results( this._stream );
+    }
+}
+
+export function run( stream ) {
+    return new BasicTestEnvironment( stream );
 }
 
 class Bucket
@@ -108,19 +178,4 @@ class Sink
   error(t, err) {
     this.events.push(['error', t, err]);
   }
-}
-
-export function run({source}) {
-  const timer = new VirtualTimer();
-  const sink = new Sink();
-  const testEnv = new TestEnv(timer, sink);
-  const disposable = new SettableDisposable();
-  const observer = new Observer(
-    sink.event.bind(sink),
-    sink.end.bind(sink),
-    sink.error.bind(sink),
-    disposable);
-  const scheduler = new Scheduler(timer, new Timeline());
-  disposable.setDisposable(source.run(observer, scheduler));
-  return testEnv;
 }

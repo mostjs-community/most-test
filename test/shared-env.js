@@ -91,13 +91,13 @@ describe( 'class TestEnvironment', () => {
 
             afterEach( () => env.reset() );
 
-            const stream$ = lazilyPeriodic( 1 );
+            const stream$ = lazilyPeriodic( 2 );
             
             it( 'should emit the events expected with the specified time interval', () => {
                 return env.tick( 5 )
                           .collect( stream$ )
                           .then( ({ events }) => {
-                              assert.deepEqual( events, [1, 2, 3, 4, 5] );
+                              assert.deepEqual( events, [2, 4] );
                           });
             });
 
@@ -105,7 +105,7 @@ describe( 'class TestEnvironment', () => {
                 return env.tick( 5 )
                           .collect( stream$ )
                           .then( ({ events }) => {
-                              assert.deepEqual( events, [1, 2, 3, 4, 5] );
+                              assert.deepEqual( events, [2, 4] );
                           });
             });
         });  

@@ -6,98 +6,98 @@ import VirtualTimer from './virtual-timer';
 
 export class TestEnvironment {
 
-    constructor() {
-        this._timer = new VirtualTimer();
-        this._t = 0;
-        this._sinks = new WeakMap();
-        this._buckets = new WeakMap();
-        this._tick = Promise.resolve();
-    }
+  constructor() {
+    this._timer = new VirtualTimer();
+    this._t = 0;
+    this._sinks = new WeakMap();
+    this._buckets = new WeakMap();
+    this._tick = Promise.resolve();
+  }
 
-    get now() {
-        return this._t;
-    }
-  
-    tick( t = 1 ) {
-        this._tick = this._tick.then( () => this._timer.tick(t) )
-                               .then( () => this._t += t );
-        return this;
-    }
+  get now() {
+    return this._t;
+  }
 
-    collect( stream ) {
-        const { sink, buckets } = this._cache( stream );
-        return this._tick.then( () => {
-            const bucket = sink.next( this._t );
-            buckets.push( bucket );
-            return bucket.toObject();
-        });
-    }
+  tick( t = 1 ) {
+    this._tick = this._tick.then( () => this._timer.tick(t) )
+                           .then( () => this._t += t );
+    return this;
+  }
 
-    results( stream ) {
-        const { buckets } = this._cache( stream );
-        return buckets.map( bucket => bucket.toObject() );
-    }
+  collect( stream ) {
+    const { sink, buckets } = this._cache( stream );
+    return this._tick.then( () => {
+      const bucket = sink.next( this._t );
+      buckets.push( bucket );
+      return bucket.toObject();
+    });
+  }
 
-    reset() {
-        return this._tick.then( () => {
-            this._t = 0;
-            this._timer._now = 0;
-            this._sinks = new WeakMap();
-            this._buckets = new WeakMap();
-        });
-    }
+  results( stream ) {
+    const { buckets } = this._cache( stream );
+    return buckets.map( bucket => bucket.toObject() );
+  }
+
+  reset() {
+    return this._tick.then( () => {
+      this._t = 0;
+      this._timer._now = 0;
+      this._sinks = new WeakMap();
+      this._buckets = new WeakMap();
+    });
+  }
 
 
-    _cache( stream ) {
-        let sink = this._sinks.get( stream );
-        let buckets = this._buckets.get( stream );
-        if( !sink ) {
-            sink = this._newSink( stream );
-            this._sinks.set( stream, sink );
-        }
-        if( !buckets ) {
-            buckets = [];
-            this._buckets.set( stream, buckets );
-        }
-        return { sink, buckets };
+  _cache( stream ) {
+    let sink = this._sinks.get( stream );
+    let buckets = this._buckets.get( stream );
+    if( !sink ) {
+        sink = this._newSink( stream );
+        this._sinks.set( stream, sink );
     }
+    if( !buckets ) {
+        buckets = [];
+        this._buckets.set( stream, buckets );
+    }
+    return { sink, buckets };
+  }
 
-    _newSink({ source }) {
-        const sink = new Sink();
-        const disposable = new SettableDisposable();
-        const observer = new Observer(
-            sink.event.bind(sink),
-            sink.end.bind(sink),
-            sink.error.bind(sink),
-            disposable );
-        const scheduler = new Scheduler( this._timer, new Timeline() );
-        disposable.setDisposable( source.run(observer, scheduler) );
-        return sink;
-    }
+  _newSink({ source }) {
+    const sink = new Sink();
+    const disposable = new SettableDisposable();
+    const observer = new Observer(
+        sink.event.bind(sink),
+        sink.end.bind(sink),
+        sink.error.bind(sink),
+        disposable );
+    const scheduler = new Scheduler( this._timer, new Timeline() );
+    disposable.setDisposable( source.run(observer, scheduler) );
+    return sink;
+  }
 }
 
 export class BasicTestEnvironment {
 
-    constructor( stream ) {
-        this._env = new TestEnvironment();
-        this._stream = stream;
-    }
+  constructor( stream ) {
+    this._env = new TestEnvironment();
+    this._stream = stream;
+  }
 
-    get now() {
-        return this._env.now;
-    }
+  get now() {
+    return this._env.now;
+  }
 
-    tick( t = 1 ) {
-        return this._env.tick( t ).collect( this._stream );
-    }
+  tick( t = 1 ) {
+    return this._env.tick( t ).collect( this._stream );
+  }
 
-    get results() {
-        return this._env.results( this._stream );
-    }
+  get results() {
+    return this._env.results( this._stream );
+  }
 }
 
 export function run( stream ) {
-    return new BasicTestEnvironment( stream );
+  return new BasicTestEnvironment( stream );
 }
 
 class Bucket

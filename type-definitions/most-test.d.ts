@@ -9,8 +9,6 @@ declare module "most-test" {
     export class TestEnvironment {
 
         readonly now: Time;
-    //  _sinks: WeakMap<Stream, Sink>;
-    //  _results: WeakMap<Stream, Result[]>;
 
         constructor();
 
@@ -30,8 +28,6 @@ declare module "most-test" {
 
         readonly now: Time;
         readonly results: Result<T>[];
-     // _stream: Stream<T>;
-     // _env: TestEnvironment;
 
         constructor( stream: Stream<T> );
 

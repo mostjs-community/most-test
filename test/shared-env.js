@@ -59,6 +59,17 @@ describe( 'class TestEnvironment', () => {
                   });
     });
 
+    it( 'should emit events even with large tick periods', () => {
+        const LONG_TIME = 30000;
+        const env = new TestEnvironment();
+        const stream$ = lazilyPeriodic( LONG_TIME );
+        return env.tick( LONG_TIME * 2 )
+                  .collect( stream$ )
+                  .then( ({ events }) => {
+                      assert.deepEqual( events, [LONG_TIME, LONG_TIME * 2] );
+                  });
+    });
+
     describe( 'shared stream', () => {
 
         describe( 'without reset()', () => {
@@ -108,7 +119,58 @@ describe( 'class TestEnvironment', () => {
                               assert.deepEqual( events, [2, 4] );
                           });
             });
-        });  
-    })
-});
+        });
+    });
 
+    describe( 'intermediate streams', () => {
+
+        const env = new TestEnvironment();
+
+        afterEach( () => env.reset() );
+
+        const stream$ = lazilyPeriodic( 2 );
+        const delayed$ = stream$.delay( 1 ).timestamp().map( ts => ts.time );
+
+        it( 'should emit events at both stages', () => {
+            env.collect( stream$ );
+            env.collect( delayed$ );
+            return env.tick( 4 ).collect( stream$ )
+                      .then( ({ events }) => {
+                          assert.deepEqual( events, [2, 4] );
+                          return env.tick().collect( delayed$ );
+                      })
+                      .then( ({ events }) => {
+                          assert.deepEqual( events, [3, 5] );
+                      });
+        });
+
+        it( 'will not emit events at both stages without observing first', () => {
+            // env.collect( stream$ );
+            // env.collect( delayed$ );
+            return env.tick( 4 ).collect( stream$ )
+                      .then( ({ events }) => {
+                          assert.deepEqual( events, [2, 4] );
+                          return env.tick().collect( delayed$ );
+                      })
+                      .then( ({ events }) => {
+                          assert.deepEqual( events, [] );
+                      });
+        });
+
+        it( 'should emit events even with large tick periods', () => {
+            const LONG_TIME = 30000;
+            const stream$ = lazilyPeriodic( LONG_TIME );
+            const delayed$ = stream$.delay( LONG_TIME ).timestamp().map( ts => ts.time );
+            env.collect( stream$ );
+            env.collect( delayed$ );
+            return env.tick( LONG_TIME * 2 ).collect( stream$ )
+                      .then( ({ events }) => {
+                          assert.deepEqual( events, [LONG_TIME, LONG_TIME * 2] );
+                          return env.tick( LONG_TIME ).collect( delayed$ );
+                      })
+                      .then( ({ events }) => {
+                          assert.deepEqual( events, [LONG_TIME * 2, LONG_TIME * 3] );
+                      });
+        });
+    });
+});

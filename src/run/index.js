@@ -9,8 +9,8 @@ export class TestEnvironment {
   constructor() {
     this._timer = new VirtualTimer();
     this._t = 0;
-    this._sinks = new WeakMap();
-    this._buckets = new WeakMap();
+    this._cacheMap = new WeakMap();
+    this._disposables = [];
     this._tick = Promise.resolve();
   }
 
@@ -42,27 +42,24 @@ export class TestEnvironment {
     return this._tick.then( () => {
       this._t = 0;
       this._timer._now = 0;
-      this._sinks = new WeakMap();
-      this._buckets = new WeakMap();
+      this._cacheMap = new WeakMap();
+      this._disposables.forEach( disposable => disposable.dispose() );
+      this._disposables = [];
     });
   }
 
 
   _cache( stream ) {
-    let sink = this._sinks.get( stream );
-    let buckets = this._buckets.get( stream );
-    if( !sink ) {
-        sink = this._newSink( stream );
-        this._sinks.set( stream, sink );
+    let cache = this._cacheMap.get( stream );
+    if( !cache ) {
+        cache = this._buildCache( stream );
+        this._cacheMap.set( stream, cache );
+        this._disposables.push( cache.disposable );
     }
-    if( !buckets ) {
-        buckets = [];
-        this._buckets.set( stream, buckets );
-    }
-    return { sink, buckets };
+    return cache;
   }
 
-  _newSink({ source }) {
+  _buildCache({ source }) {
     const sink = new Sink();
     const disposable = new SettableDisposable();
     const observer = new Observer(
@@ -72,7 +69,7 @@ export class TestEnvironment {
         disposable );
     const scheduler = new Scheduler( this._timer, new Timeline() );
     disposable.setDisposable( source.run(observer, scheduler) );
-    return sink;
+    return { sink, disposable, observer, scheduler, buckets: [] };
   }
 }
 

@@ -13,6 +13,7 @@ declare module "most-test" {
         constructor();
 
         tick<T>( ms?: Interval ): this;
+        track( ...streams: Stream<any>[] ): this;
         collect<T>( stream: Stream<T> ): Promise<Result<T>>;
         results<T>( stream: Stream<T> ): Result<T>[];
         reset(): void;

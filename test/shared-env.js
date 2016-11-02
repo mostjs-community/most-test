@@ -132,8 +132,7 @@ describe( 'class TestEnvironment', () => {
         const delayed$ = stream$.delay( 1 ).timestamp().map( ts => ts.time );
 
         it( 'should emit events at both stages', () => {
-            env.collect( stream$ );
-            env.collect( delayed$ );
+            env.track( stream$, delayed$ );
             return env.tick( 4 ).collect( stream$ )
                       .then( ({ events }) => {
                           assert.deepEqual( events, [2, 4] );
@@ -144,9 +143,8 @@ describe( 'class TestEnvironment', () => {
                       });
         });
 
-        it( 'will not emit events at both stages without observing first', () => {
-            // env.collect( stream$ );
-            // env.collect( delayed$ );
+        it( 'will not emit events at both stages without calling .track() first', () => {
+            // env.track( stream$, delayed$ );
             return env.tick( 4 ).collect( stream$ )
                       .then( ({ events }) => {
                           assert.deepEqual( events, [2, 4] );
@@ -161,8 +159,7 @@ describe( 'class TestEnvironment', () => {
             const LONG_TIME = 30000;
             const stream$ = lazilyPeriodic( LONG_TIME );
             const delayed$ = stream$.delay( LONG_TIME ).timestamp().map( ts => ts.time );
-            env.collect( stream$ );
-            env.collect( delayed$ );
+            env.track( stream$, delayed$ );
             return env.tick( LONG_TIME * 2 ).collect( stream$ )
                       .then( ({ events }) => {
                           assert.deepEqual( events, [LONG_TIME, LONG_TIME * 2] );

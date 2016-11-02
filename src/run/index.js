@@ -48,6 +48,10 @@ export class TestEnvironment {
     });
   }
 
+  track( ...streams ) {
+    streams.forEach( s => this._cache(s) );
+    return this;
+  }
 
   _cache( stream ) {
     let cache = this._cacheMap.get( stream );

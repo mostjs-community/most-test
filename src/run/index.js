@@ -8,6 +8,7 @@ export class TestEnvironment {
 
   constructor() {
     this._timer = new VirtualTimer();
+    this._scheduler = new Scheduler( this._timer, new Timeline() );
     this._t = 0;
     this._cacheMap = new WeakMap();
     this._disposables = [];
@@ -71,9 +72,8 @@ export class TestEnvironment {
         sink.end.bind(sink),
         sink.error.bind(sink),
         disposable );
-    const scheduler = new Scheduler( this._timer, new Timeline() );
-    disposable.setDisposable( source.run(observer, scheduler) );
-    return { sink, disposable, observer, scheduler, buckets: [] };
+    disposable.setDisposable( source.run(observer, this._scheduler) );
+    return { sink, disposable, observer, buckets: [] };
   }
 }
 

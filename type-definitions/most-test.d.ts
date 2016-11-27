@@ -16,7 +16,7 @@ declare module "most-test" {
         track( ...streams: Stream<any>[] ): this;
         collect<T>( stream: Stream<T> ): Promise<Result<T>>;
         results<T>( stream: Stream<T> ): Result<T>[];
-        reset(): void;
+        reset(): Promise<void>;
     }
 
     type Result<T> = {

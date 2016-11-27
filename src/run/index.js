@@ -1,32 +1,104 @@
 import Observer from './observer';
 import SettableDisposable from 'most/lib/disposable/SettableDisposable';
 import Scheduler from 'most/lib/scheduler/Scheduler';
+import Timeline from 'most/lib/scheduler/Timeline';
 import VirtualTimer from './virtual-timer';
 
-export class TestEnv
-{
-  constructor(timer, sink) {
-    this._timer = timer;
-    this._sink = sink;
-    this._t = 0;
-  }
+export class TestEnvironment {
 
-  tick(t = 1) {
-    return this._timer.tick(t)
-      .then(() => {
-        this._t += t;
-        const bucket = this._sink.next(this._t);
-        return bucket.toObject();
-      });
+  constructor() {
+    this._timer = new VirtualTimer();
+    this._t = 0;
+    this._cacheMap = new WeakMap();
+    this._disposables = [];
+    this._tick = Promise.resolve();
   }
 
   get now() {
     return this._t;
   }
 
-  get results() {
-    return this._sink.buckets.map(b => b.toObject());
+  tick( t = 1 ) {
+    this._tick = this._tick.then( () => this._timer.tick(t) )
+                           .then( () => this._t += t );
+    return this;
   }
+
+  collect( stream ) {
+    const { sink, buckets } = this._cache( stream );
+    return this._tick.then( () => {
+      const bucket = sink.next( this._t );
+      buckets.push( bucket );
+      return bucket.toObject();
+    });
+  }
+
+  results( stream ) {
+    const { buckets } = this._cache( stream );
+    return buckets.map( bucket => bucket.toObject() );
+  }
+
+  reset() {
+    return this._tick.then( () => {
+      this._t = 0;
+      this._timer._now = 0;
+      this._cacheMap = new WeakMap();
+      this._disposables.forEach( disposable => disposable.dispose() );
+      this._disposables = [];
+    });
+  }
+
+  track( ...streams ) {
+    streams.forEach( s => this._cache(s) );
+    return this;
+  }
+
+  _cache( stream ) {
+    let cache = this._cacheMap.get( stream );
+    if( !cache ) {
+        cache = this._buildCache( stream );
+        this._cacheMap.set( stream, cache );
+        this._disposables.push( cache.disposable );
+    }
+    return cache;
+  }
+
+  _buildCache({ source }) {
+    const sink = new Sink();
+    const disposable = new SettableDisposable();
+    const observer = new Observer(
+        sink.event.bind(sink),
+        sink.end.bind(sink),
+        sink.error.bind(sink),
+        disposable );
+    const scheduler = new Scheduler( this._timer, new Timeline() );
+    disposable.setDisposable( source.run(observer, scheduler) );
+    return { sink, disposable, observer, scheduler, buckets: [] };
+  }
+}
+
+export class BasicTestEnvironment {
+
+  constructor( stream ) {
+    this._env = new TestEnvironment();
+    this._stream = stream;
+  }
+
+  get now() {
+    return this._env.now;
+  }
+
+  tick( t = 1 ) {
+    return this._env.tick( t ).collect( this._stream );
+  }
+
+  get results() {
+    return this._env.results( this._stream );
+  }
+}
+
+export function run( stream ) {
+  return new BasicTestEnvironment( stream );
 }
 
 class Bucket
@@ -107,19 +179,4 @@ class Sink
   error(t, err) {
     this.events.push(['error', t, err]);
   }
-}
-
-export function run({source}) {
-  const timer = new VirtualTimer();
-  const sink = new Sink();
-  const testEnv = new TestEnv(timer, sink);
-  const disposable = new SettableDisposable();
-  const observer = new Observer(
-    sink.event.bind(sink),
-    sink.end.bind(sink),
-    sink.error.bind(sink),
-    disposable);
-  const scheduler = new Scheduler(timer);
-  disposable.setDisposable(source.run(observer, scheduler));
-  return testEnv;
 }

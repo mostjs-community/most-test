@@ -1,7 +1,8 @@
 {
   "name": "most-test",
-  "version": "1.0.3",
+  "version": "1.2.0",
   "description": "Unit testing tools for Most.js",
+  "typings": "type-definitions/most-test.d.ts",
   "main": "lib/index.js",
   "scripts": {
     "test": "mocha",
@@ -36,6 +37,7 @@
     "eslint": "^2.8.0",
     "mkdirp": "^0.5.1",
     "mocha": "^2.5.3",
-    "most": "*"
+    "most": "*",
+    "rimraf": "^2.5.4"
   }
 }

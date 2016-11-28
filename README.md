@@ -7,6 +7,8 @@ This is a library to make unit testing of [Most.js](https://github.com/cujojs/mo
 
 Though I expect to include more in the future, the most important (and currently only) tool provided is a stream runner utilizing a **virtual timer** with which you can test your streams on your own terms, rather than being subject to the unpredictability and imprecision of the OS timer. Being able to test with single-millisecond granularity can make your tests clearer and more concise as well.
 
+_Special thanks to [@RamIdeas](https://github.com/RamIdeas) for testing and contributing fixes and enhancements to the library._
+
 ## Installation
 
 ```

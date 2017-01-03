@@ -57,9 +57,9 @@ export class TestEnvironment {
   _cache( stream ) {
     let cache = this._cacheMap.get( stream );
     if( !cache ) {
-        cache = this._buildCache( stream );
-        this._cacheMap.set( stream, cache );
-        this._disposables.push( cache.disposable );
+      cache = this._buildCache( stream );
+      this._cacheMap.set( stream, cache );
+      this._disposables.push( cache.disposable );
     }
     return cache;
   }

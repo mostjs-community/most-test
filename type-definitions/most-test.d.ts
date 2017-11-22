@@ -43,9 +43,9 @@ declare module "most-test" {
         events: [string, Time, any][];
         index: number;
         next( t: Time ): Bucket<T>;
-        event( t: Time, x: T );
-        end( t: Time, x: T );
-        error( t: Time, err: Error );
+        event( t: Time, x: T ): any;
+        end( t: Time, x: T ): any;
+        error( t: Time, err: Error ): any;
     }
 
     class Bucket<T> {
